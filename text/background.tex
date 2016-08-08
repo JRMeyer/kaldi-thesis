@@ -1,7 +1,7 @@
 % !TEX root = main.tex
 \chapter{Background}
 \label{cha:background}
-This chapter introduce the basics of speech recognition related to this work. Section \ref{sec:back_asr} introduces speech preprocessing, \acf{AM} and \acf{LM} training, and explains important aspects of speech decoding. Following sections describe specific speech recognition software implementations. The Kaldi toolkit is described in Section \ref{sec:back_kaldi}, the \ac{HTK} toolkit in Section \ref{sec:back_htk} and the Julius decoder in Section \ref{sec:back_julius}.
+This chapter introduces the basics of speech recognition related to this work. Section \ref{sec:back_asr} introduces speech preprocessing, \acf{AM} and \acf{LM} training, and explains important aspects of speech decoding. Following sections describe specific speech recognition software implementations. The Kaldi toolkit is described in Section \ref{sec:back_kaldi}, the \ac{HTK} toolkit in Section \ref{sec:back_htk} and the Julius decoder in Section \ref{sec:back_julius}.
 
 The statistical methods for continuous speech recognition were established more than 30 years ago. The most popular statistical methods are based on acoustic modelling using \acp{HMM} and n-gram \acp{LM}, which are also used in Kaldi, the toolkit of our choice. We introduce principles of speech recognition and present techniques which are used in Kaldi. 
 
@@ -45,7 +45,7 @@ The goal of speech parameterization is to reduce the negative environmental infl
 
 \begin{itemize}
 \item Differences among speakers' pronunciation depends on gender, dialect, voice, etc.
-\item Environmental noises. In the dialogue system Alex where our \ac{ASR} implementation is used, the speech is typically recorded in a noisy street environment.
+\item Environmental noises. In the dialogue system Alex (where our \ac{ASR} implementation is used) the speech is typically recorded in a noisy street environment.
 \item The recorded channel.
   For example the telephone signal is reduced to frequency band between 300 to 3000Hz.
   The quality of mobile phone signal also influences the quality of the audio signal.
@@ -174,7 +174,7 @@ The triphone is a sequence of three phones and captures the context of single ph
 The \ac{HMM} is a very powerful statistical method for characterizing observed data samples of a discrete-time series with an unknown state. \cite{huang2001spoken}. In the case of speech recognition, the hidden states typically represent monophones or triphones and we observe samples of the acoustic features.
 
 \ml{transition probability}
-Hidden Markov Models have two type of parameters \term{transition probabilities among states} and \term{probabilistic distribution for generating an observation in given state}. These parameters need to be estimated in \ac{AM} training.\footnote{Both kind of parameters are denoted together as $\theta$ in Equation \ref{eq:best_fix}.}
+Hidden Markov Models have two types of parameters: \term{transition probabilities among states} and \term{probabilistic distributions for generating an observation in given state}. These parameters need to be estimated in \ac{AM} training.\footnote{Both kind of parameters are denoted together as $\theta$ in Equation \ref{eq:best_fix}.}
 
 The transition probability is the probability of changing state $q$ to state $u$. Each transition is represented as an arc $e=qu$ between the states $q$ and $u$, see \ref{fig:hmm_words}. The probability of the transition is typically represented as the weight $w_e$ of arc $e$.
 
@@ -184,7 +184,7 @@ Importantly, an \ac{HMM} uses a self loop arc $e=uu$ for each state to model aco
 During traversal over one of its arcs, the Markov model emits an observation. The \acl{HMM} emits the observation stochastically based on the probabilistic distribution related to the visited state. In speech recognition, a multivariate Gaussian distribution is typically used to model observation probabilities of \ac{HMM} states. The Gaussian distribution models the probability of emitting acoustic features from a given state. The parameters of the Gaussian distribution are estimated for each state individually. However, states are usually clustered during \ac{AM} training and the states within a cluster share the same parameters for the Gaussian distribution.
 
 
-\subsubsection*{Training \ac{HMM}}
+\subsubsection*{\ac{HMM} Training}
 \label{sub:trainhmm}
 
 Kaldi uses Viterbi training and \ac{HTK} uses \acl{EM} algorithms to train \ac{HMM} \acl{AM}s. Both toolkits model observation probabilities using multivariate Gaussian distributions with the dimension of the acoustic features $a$. % Both Viterbi training and the \ac{EM} algorithm initialize the \ac{HMM} with initial values. 
@@ -193,7 +193,7 @@ Typically, the transition probabilities are initialised with values uniformly di
 
 \ml{EM}
 
-Let us describe how the \ac{EM} algorithm operates for one pair of training data consisting of acoustic features $a$ and corresponding text speech transcription $t$. We create an \ac{HMM} $t'$, where each state represents one monophone.\footnote{We describe the identical training procedure for simplicity on monophones. State-of-the-art \acp{AM} use triphones.} The monophones are extracted from the transcription $t$ using the pronunciation dictionary. In Figure \ref{fig:hmm_words} the utterance \term{how do you do} was expanded to a monophone \ac{HMM} model. Given the \ac{HMM} model for transcription $t$ and acoustic features $a$ the parameters of the model are estimated. It should be obvious that only states representing phones in the transcription can be trained by the training pair $(a, t)$. Consequently, one needs a lot of training data to robustly estimate the parameters of every state.
+Let us describe how the \ac{EM} algorithm operates for one pair of training data consisting of (1) the acoustic features $a$ and (2) the corresponding text speech transcription $t$. We create an \ac{HMM} $t'$, where each state represents one monophone.\footnote{We describe the identical training procedure for simplicity on monophones. State-of-the-art \acp{AM} use triphones.} The monophones are extracted from the transcription $t$ using the pronunciation dictionary. In Figure \ref{fig:hmm_words} the utterance \term{how do you do} was expanded to a monophone \ac{HMM} model. Given the \ac{HMM} model for transcription $t$ and the acoustic features $a$, the parameters of the model are estimated. It should be obvious that only states representing phones in the transcription can be trained by the training pair $(a, t)$. Consequently, one needs a lot of training data to robustly estimate the parameters of every state.
 
 The \ac{EM} algorithm iterates over the following steps in order to update the parameters of transition and observation probabilities:
 
@@ -263,7 +263,7 @@ The initial conditions are $\phi_1(1)=1$ and $\phi_j(1)= a_{1j}b_j(o_1)$, for $ 
   b_j(o_t) = \sum_{m=1}^{M_j}{c_{jm}\mathcal{N}(o_t; \mu_{jm}, \Sigma_{jm})}
 \end{equation}
 
-The $M_j$ represents number of mixture components in state $j$, $c_{jm}$ is the weight of $m^{th}$ component and $\mathcal{N}(o_t; \mu_{jm}, \Sigma_{jm})$ is a multivariate Gausian with mean vector $\mu$ and covariance $\Sigma$.
+The $M_j$ represents the number of mixture components in state $j$ $c_{jm}$ is the weight of the $m^{th}$ component, and $\mathcal{N}(o_t; \mu_{jm}, \Sigma_{jm})$ is a multivariate Gausian with mean vector $\mu$ and covariance $\Sigma$.
 
 Firstly, model parameters are updated based on the single-best alignment of individual observations to states and Gaussian components within states. Secondly, transition probabilities are estimated from the relative frequencies from Equation \ref{eq:freq}, where $A_{ij}$ denotes the number of transitions from state $i$ to state $j$.
 
@@ -295,7 +295,7 @@ To conclude, \ac{AM}s are trained using \ac{MLE} or Viterbi training, which appr
 
 \ml{discriminative training}
 
-Discriminative training uses an objective function and likelihoods from a generative model to discriminate -- boost differences between high probable and low probable hypotheses. Discriminative training is typically initialised by an acoustic generative model from Baum-Welch or Viterbi training. Then, the likelihood from the generative model is boosted according an objective function, and the \ac{AM} is re-estimated. The following objective functions and accordingly named discriminative training methods are used in our training scripts:
+Discriminative training uses an objective function and likelihoods from a generative model to discriminate -- i.e. to boost differences -- between high probable and low probable hypotheses. Discriminative training is typically initialised by an acoustic generative model from Baum-Welch or Viterbi training. Then, the likelihood from the generative model is boosted according an objective function, and the \ac{AM} is re-estimated. The following objective functions and accordingly named discriminative training methods are used in our training scripts:
 
 \begin{itemize}
 \item \acl{MMI}\cite{chow1990maximum} % Note the~\ac{MMI} function is implemented as \acs{bMMI} with boosted parameter set to 0.
@@ -555,7 +555,7 @@ The~\term{HDecode} has very similar license condition but can be only used for r
 \label{sec:back_julius}
 
 % http://julius.sourceforge.jp/juliusbook/en/desc_overview.html
-Julius is a~large vocabulary continuous speech decoder which can use \ac{AM} in \ac{HTK} format for decoding.\cite{lee2009julius}
+Julius is a~large vocabulary continuous speech decoder which can use \acp{AM} in \ac{HTK} format for decoding.\cite{lee2009julius}
 Julius is BSD licensed\footnote{\url{http://www.linfo.org/bsdlicense.html}} and performs almost real-time decoding.
 
 Julius is a~two pass decoder. 
@@ -573,14 +573,14 @@ In addition, the~crashes were hard to detect because Julius used to run in a~sep
 \section{Kaldi}
 \label{sec:back_kaldi}
 
-Kaldi is a~speech recognition toolkit consisting of a~library, command line programs and scripts for acoustic modelling.
-Kaldi deploys several decoders for evaluation Kaldi \acp{AM}.
+Kaldi is a speech recognition toolkit consisting of a library, command line programs, and scripts for acoustic modelling.
+Kaldi deploys several decoders for evaluating Kaldi \acp{AM}.
 Kaldi uses Viterbi training for estimating \acp{AM}. 
 Only in special cases of speaker adaptive discriminative training the~extended Baum-Welch algorithm is also used\cite{povey2011kaldi}.
 
-The~architecture of the~Kaldi toolkit could be separated to Kaldi library and training scripts.
-The~scripts access the~functionality of Kaldi library through command line programs.
-The~C++ Kaldi library is based on the~\term{OpenFST}\cite{allauzen2007openfst} library and it uses optimized libraries for linear algebra such as BLAS and LAPACK.
+The architecture of the~Kaldi toolkit can be separated into two parts: (1) the Kaldi library and (2) training scripts.
+The~scripts access the~functionality of the Kaldi library through command line programs.
+The~C++ Kaldi library is based on the~\term{OpenFST}\cite{allauzen2007openfst} library, and it uses optimized libraries for linear algebra such as BLAS and LAPACK.
 Related functionality is usually grouped in one namespace in C++ code, which corresponds to one directory on file system. 
 The~examples of the~namespaces or directories can be seen in Figure~\ref{fig:kaldi_arch}
 
@@ -592,8 +592,8 @@ The~examples of the~namespaces or directories can be seen in Figure~\ref{fig:kal
     \end{center}
 \end{figure}
 
-Kaldi uses executables which load its input from files and typically store results again to files.
-Alternatively, the~output of one Kaldi program can be feed into next command using system pipes.
+Kaldi uses executables which load input from files and typically store results again to files.
+Alternatively, the~output of one Kaldi program can be fed into next command using system pipes.
 There are usually many alternatives for every speech recognition tasks as seen in list of executables below:
 \begin{enumerate}
     \item Speech parametrisation
@@ -632,11 +632,11 @@ The~recipe, the~data and acoustic modelling scripts are described in~Chapter~\re
 
 \subsection{Finite State Transducers} 
 \label{sec:fst}
-The~\acl{FST} framework and its implementation OpenFST determines the~shape of the~Kaldi data structures.
-Kaldi uses \ac{FST} as underlaying representation for \ac{LM}, partially for \ac{AM}, lexicon and also for representing transformation between text, pronunciation and triphones.
+The~\acl{FST} framework and its implementation in OpenFST determines the~shape of Kaldi data structures.
+Kaldi uses \acp{FST} as the underlaying representation for \acp{LM}, partially for \acp{AM}, the lexicon, and also for representing transformation between text, pronunciation and triphones.
 
 The~\ac{FST} framework provides well studied graph operations\cite{mohri2002weighted} which can be effectively used for acoustic modelling.
-Using the~\ac{FST} framework the~speech decoding task is expressed as a~beam search in a~graph, which is well studied problem.
+Using the~\ac{FST} framework, the~speech decoding task is expressed as a~beam search in a~graph, which is well studied problem.
 % The~OpenFST library implements memory efficient representation of \ac{FST} and provides standardized efficient operations.
 % As stated in \cite{mohri2002weighted} and \cite{povey2011kaldi} the~operations can be effectively used for speech decoding. 
 
@@ -662,7 +662,7 @@ Following one liner illustrates how Kaldi decoding graph is created using standa
 
 \ml{Semiring}
 Most of the~operations operate on paths in the~decoding graph.
-Path is a~sequence of edges which have weights and an input and an output labels.
+A path is a~sequence of edges which have weights, an input, and an output label.
 Based on the~weight type and weight path operations we distinguish several semirings. 
 
 Formally, a~\term{semiring} $(\mathcal{K}, \oplus, \otimes, \bar{0}, \bar{1})$ is an algebraic structure on set $\mathcal{K}$ with operations $\oplus$ and $\otimes$.
